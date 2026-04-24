@@ -1,0 +1,177 @@
+services:
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.9
+    command: >
+      /usr/local/bin/etcd 
+      --listen-client-urls http://0.0.0.0:2379 
+      --advertise-client-urls http://etcd:2379 
+      --data-dir /etcd-data
+    volumes:
+      - ./vt/etcd:/etcd-data
+
+  init_topo:
+    image: vitess/lite:latest
+    restart: on-failure
+    command: >
+      sh -c "/vt/bin/vtctl
+      --topo-implementation etcd2
+      --topo-global-server-address etcd:2379
+      --topo-global-root /vitess/global
+      AddCellInfo
+      --root /vitess/zone1
+      --server_address etcd:2379
+      zone1 || true"
+    depends_on:
+      - etcd
+
+  vtctld:
+    image: vitess/lite:latest
+    restart: on-failure
+    command: >
+      /vt/bin/vtctld
+      --topo-implementation etcd2
+      --topo-global-server-address etcd:2379
+      --topo-global-root /vitess/global
+      --port 15000
+      --grpc-port 15999
+      --service-map 'grpc-vtctld'
+    volumes: 
+      - ./:/vt/files
+    ports:
+      - "15000:15000"
+      - "15999:15999"
+    depends_on:
+      - init_topo
+  
+  vtgate:
+    image: vitess/lite:latest
+    restart: on-failure
+    command: >
+      /vt/bin/vtgate
+      --topo-implementation etcd2 
+      --topo-global-server-address etcd:2379 
+      --topo-global-root /vitess/global 
+      --port 15001 
+      --mysql-server-port 15306 
+      --mysql_auth_server_impl none
+      --cell zone1
+      --cells-to-watch zone1
+      --tablet-types-to-wait primary
+    ports:
+      - "15306:15306"
+    depends_on:
+      - init_topo
+
+  # --- SHARD 1 ---
+  mysql_shard_1:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=repo_software
+    volumes:
+      - ./vt/shard_55:/var/lib/mysql
+
+  vttablet_shard_1:
+    image: vitess/lite:latest
+    restart: on-failure
+    command: >
+      /vt/bin/vttablet 
+      --tablet-path zone1-0000000101
+      --init-tablet-type replica
+      --init-keyspace repo_software 
+      --init-shard -55 
+      --topo-implementation etcd2 
+      --topo-global-server-address etcd:2379
+      --topo-global-root /vitess/global
+      --db-host mysql_shard_1
+      --db-port 3306
+      --db-app-user root
+      --db-app-password root
+      --db-dba-user root
+      --db-dba-password root
+      --db-allprivs-user root
+      --db-allprivs-password root
+      --unmanaged
+      --port 15002      
+      --grpc-port 15992
+      --service-map 'grpc-queryservice,grpc-tabletmanager'
+    depends_on:
+      - mysql_shard_1
+      - init_topo
+
+  # --- SHARD 2 ---
+  mysql_shard_2:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=repo_software
+    volumes:
+      - ./vt/shard_55_aa:/var/lib/mysql
+
+  vttablet_shard_2:
+    image: vitess/lite:latest
+    restart: on-failure
+    command: >
+      /vt/bin/vttablet
+      --tablet-path zone1-0000000102
+      --init-tablet-type replica
+      --init-keyspace repo_software 
+      --init-shard 55-aa
+      --topo-implementation etcd2 
+      --topo-global-server-address etcd:2379
+      --topo-global-root /vitess/global
+      --db-host mysql_shard_2
+      --db-port 3306
+      --db-app-user root
+      --db-app-password root
+      --db-dba-user root
+      --db-dba-password root
+      --db-allprivs-user root
+      --db-allprivs-password root
+      --unmanaged
+      --port 15003 
+      --grpc-port 15993
+      --service-map 'grpc-queryservice,grpc-tabletmanager'
+    depends_on:
+      - mysql_shard_2
+      - init_topo
+    
+  # --- SHARD 3 ---
+  mysql_shard_3:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=repo_software
+    volumes:
+      - ./vt/shard_aa:/var/lib/mysql
+
+  vttablet_shard_3:
+    image: vitess/lite:latest
+    restart: on-failure
+    command: >
+      /vt/bin/vttablet
+      --tablet-path zone1-0000000103
+      --init-tablet-type replica
+      --init-keyspace repo_software 
+      --init-shard aa-
+      --topo-implementation etcd2 
+      --topo-global-server-address etcd:2379
+      --topo-global-root /vitess/global
+      --db-host mysql_shard_3
+      --db-port 3306
+      --db-app-user root
+      --db-app-password root
+      --db-dba-user root
+      --db-dba-password root
+      --db-allprivs-user root
+      --db-allprivs-password root
+      --unmanaged
+      --port 15004
+      --grpc-port 15994
+      --service-map 'grpc-queryservice,grpc-tabletmanager'
+    depends_on:
+      - mysql_shard_3
+      - init_topo

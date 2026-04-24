@@ -1,0 +1,18 @@
+{
+  "sharded": true,
+  "vindexes": {
+    "hash_index": {
+      "type": "xxhash"
+    }
+  },
+  "tables": {
+    "software_packages": {
+      "column_vindexes": [
+        {
+          "column": "packageId",
+          "name": "hash_index"
+        }
+      ]
+    }
+  }
+}

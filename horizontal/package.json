@@ -1,0 +1,18 @@
+{
+  "name": "horizontal",
+  "version": "1.0.0",
+  "description": "La fragmentación horizontal es la división de los registros de una tabla en diferentes servidores o nodos. La finalidad de dividir es distribuir la carga, ya que en una aplicación una sola tabla puede tener millones de registros, al dividirlos en diferentes servidores, las consultas, lecturas y escrituras tienen menor latencia, así como un menor consumo de recursos.  A diferencia con la fragmentación vertical, en los diferentes nodos se tienen las misma columnas pero un menor número de registros (filas).",
+  "main": "seed.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "crypto": "^1.0.1",
+    "express": "^5.2.1",
+    "mysql2": "^3.22.2"
+  }
+}

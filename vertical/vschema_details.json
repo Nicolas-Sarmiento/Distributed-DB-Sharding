@@ -1,0 +1,6 @@
+{
+  "sharded": false,
+  "tables": {
+    "packages_details": {}
+  }
+}

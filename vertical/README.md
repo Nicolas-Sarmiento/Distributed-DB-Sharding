@@ -57,6 +57,32 @@ npm start
 ```
 El servidor escuchará en `http://localhost:3000`.
 
+## Frontend (General)
+
+Este repositorio incluye un frontend React ubicado en la **raíz del proyecto** (al mismo nivel que `vertical/` y `horizontal/`).
+
+El frontend es **general** y puede usarse para visualizar e insertar datos contra cualquier backend compatible con estos endpoints:
+- `POST /packages`
+- `GET /packages`
+- `GET /packages/:id`
+
+### Orden recomendado para levantar todo
+1. Levantar Vitess/MySQL en `vertical/`:
+```bash
+docker compose up -d
+```
+2. Ejecutar backend en `vertical/`:
+```bash
+npm start
+```
+3. Desde la **raíz del proyecto**, ejecutar frontend:
+```bash
+cd frontend
+npm run dev
+```
+
+Con eso, el frontend consumirá el backend en `http://localhost:3000`.
+
 ## Probar la API (Postman o CURL)
 
 1. **Crear un paquete:**
@@ -76,3 +102,39 @@ El servidor escuchará en `http://localhost:3000`.
 2. **Obtener paquetes (Cross-Keyspace Join):**
    Realiza un `GET` a `http://localhost:3000/packages`.
    *VTGate se encargará de hacer la unión de ambas tablas subyacentes sin que tu aplicación deba preocuparse por conectarse a dos servidores distintos.*
+
+## Solución de Problemas
+
+Si ves errores como:
+- `unknown database 'software_core' in vschema`
+- `no healthy tablet available for keyspace software_core`
+
+normalmente la inicialización automática no terminó correctamente.
+
+1. Baja el stack y limpia volúmenes:
+```bash
+docker compose down -v
+```
+
+2. Sube servicios:
+```bash
+docker compose up -d
+```
+
+3. Re-ejecuta la inicialización de Vitess manualmente:
+```bash
+docker compose run --rm auto_init_vitess
+```
+
+4. Revisa que no haya errores en tablets:
+```bash
+docker compose logs --tail=100 vttablet_core
+docker compose logs --tail=100 vttablet_details
+```
+
+5. Ejecuta el seed otra vez:
+```bash
+node seed.js
+```
+
+Nota en Windows: los scripts `.sh` deben usar saltos de línea `LF`. Este repositorio fuerza eso con `.gitattributes`.

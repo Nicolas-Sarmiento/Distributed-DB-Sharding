@@ -67,7 +67,10 @@ services:
     image: vitess/lite:latest
     volumes:
       - ./:/vt/files
-    command: bash /vt/files/init_vitess.sh
+    command: >
+      sh -c "tr -d '\\r' < /vt/files/init_vitess.sh > /tmp/init_vitess.sh &&
+      chmod +x /tmp/init_vitess.sh &&
+      /tmp/init_vitess.sh"
     depends_on:
       - vtctld
       - vttablet_core
@@ -80,6 +83,11 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=software_core
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     volumes:
       - ./vt/core_shard_0:/var/lib/mysql
 
@@ -108,8 +116,10 @@ services:
       --grpc-port 15992
       --service-map 'grpc-queryservice,grpc-tabletmanager'
     depends_on:
-      - mysql_core
-      - init_topo
+      mysql_core:
+        condition: service_healthy
+      init_topo:
+        condition: service_started
 
   # --- KEYSPACE: software_details ---
   mysql_details:
@@ -118,6 +128,11 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=software_details
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
     volumes:
       - ./vt/details_shard_0:/var/lib/mysql
 
@@ -146,5 +161,7 @@ services:
       --grpc-port 15993
       --service-map 'grpc-queryservice,grpc-tabletmanager'
     depends_on:
-      - mysql_details
-      - init_topo
+      mysql_details:
+        condition: service_healthy
+      init_topo:
+        condition: service_started

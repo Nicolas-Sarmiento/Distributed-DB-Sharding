@@ -7,7 +7,7 @@ services:
       --advertise-client-urls http://etcd:2379 
       --data-dir /etcd-data
     volumes:
-      - ./vt/etcd:/etcd-data
+      - ./vt/etcd:/etcd-data:Z
 
   init_topo:
     image: vitess/lite:latest
@@ -36,7 +36,7 @@ services:
       --grpc-port 15999
       --service-map 'grpc-vtctld'
     volumes: 
-      - ./:/vt/files
+      - ./:/vt/files:Z
     ports:
       - "16000:15000"
       - "16999:15999"
@@ -62,11 +62,10 @@ services:
     depends_on:
       - init_topo
 
-  # Automatización de la configuración (VSchema, Shards, Keyspaces)
   auto_init_vitess:
     image: vitess/lite:latest
     volumes:
-      - ./:/vt/files
+      - ./:/vt/files:Z
     command: >
       sh -c "tr -d '\\r' < /vt/files/init_vitess.sh > /tmp/init_vitess.sh &&
       chmod +x /tmp/init_vitess.sh &&
@@ -80,6 +79,11 @@ services:
   mysql_core:
     image: mysql:8.0
     restart: always
+    command: >
+      mysqld
+      --server-id=1
+      --log-bin=mysql-bin
+      --binlog_format=ROW
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=software_core
@@ -89,7 +93,7 @@ services:
       timeout: 5s
       retries: 30
     volumes:
-      - ./vt/core_shard_0:/var/lib/mysql
+      - ./vt/core_shard_0:/var/lib/mysql:Z
 
   vttablet_core:
     image: vitess/lite:latest
@@ -125,6 +129,11 @@ services:
   mysql_details:
     image: mysql:8.0
     restart: always
+    command: >
+      mysqld
+      --server-id=2
+      --log-bin=mysql-bin
+      --binlog_format=ROW
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=software_details
@@ -134,7 +143,7 @@ services:
       timeout: 5s
       retries: 30
     volumes:
-      - ./vt/details_shard_0:/var/lib/mysql
+      - ./vt/details_shard_0:/var/lib/mysql:Z
 
   vttablet_details:
     image: vitess/lite:latest

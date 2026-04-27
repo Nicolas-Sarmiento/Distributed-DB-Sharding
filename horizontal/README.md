@@ -74,7 +74,14 @@ node server.js
 ```
 
 ## 3. Iniciar FrontEnd
-
+Primeramente es necesario instalar las dependencias de la carpeta fronted para ello es necesario ejecutar dentro de esta carpeta el siguiente comando:
+```bash
+npm i
+```
+ahora se puede ejecutar el front mediante el siguiente comando:
+```bash
+npm run dev
+```
 # Descripción del Sistema
 ## Arquitectura
 En el siguiente diagrama se muestra una representación de las diferentes capas de la aplicación y la comunicación entre ellas.

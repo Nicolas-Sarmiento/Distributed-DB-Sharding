@@ -64,18 +64,22 @@ app.get('/packages/:id', async (req, res) => {
         let shardUbicacion = "Desconocido";
 
         for (const nombreShard of shards) {
-            const configShard = { ...DB_CONFIG, database: `repo_software/${nombreShard}` };
-            const connShard = await mysql.createConnection(configShard);
-           
-            const [resultadoShard] = await connShard.execute(
-                'SELECT packageId FROM software_packages WHERE packageId = ?',
-                [packageId]
-            );
-            await connShard.end();
+            try {
+                const configShard = { ...DB_CONFIG, database: `repo_software/${nombreShard}` };
+                const connShard = await mysql.createConnection(configShard);
+               
+                const [resultadoShard] = await connShard.execute(
+                    'SELECT packageId FROM software_packages WHERE packageId = ?',
+                    [packageId]
+                );
+                await connShard.end();
 
-            if (resultadoShard.length > 0) {
-                shardUbicacion = nombreShard;
-                break; 
+                if (resultadoShard.length > 0) {
+                    shardUbicacion = nombreShard;
+                    break; 
+                }
+            } catch (err) {
+                console.warn(`[Aviso] Shard ${nombreShard} temporalmente indisponible:`, err.message);
             }
         }
 
@@ -152,7 +156,14 @@ app.get('/shard/:name', async (req, res) => {
             data: rows
         });
     } catch (error) {
-        res.status(500).json({ error: `Error consultando shard ${shardName}: ${error.message}` });
+        console.warn(`[Aviso] No se pudo acceder al shard ${shardName}:`, error.message);
+        res.json({ 
+            shard: shardName, 
+            count: 0, 
+            data: [],
+            isDown: true,
+            error: error.message
+        });
     }
 });
 

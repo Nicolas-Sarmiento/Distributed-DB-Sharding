@@ -1,4 +1,4 @@
-# Fragmentación Horizontal
+ # Fragmentación Horizontal
 
 La fragmentación horizontal es la división de los registros de una tabla en diferentes servidores o nodos. La finalidad de dividir es distribuir la carga, ya que en una aplicación una sola tabla puede tener millones de registros, al dividirlos en diferentes servidores, las consultas, lecturas y escrituras tienen menor latencia, así como un menor consumo de recursos. 
 A diferencia con la fragmentación vertical, en los diferentes nodos se tienen las misma columnas pero un menor número de registros (filas).

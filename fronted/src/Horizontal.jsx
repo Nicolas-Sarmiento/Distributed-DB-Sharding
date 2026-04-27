@@ -31,33 +31,73 @@ function Horizontal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [flashId, setFlashId] = useState('');
 
-  useEffect(() => {
-    const loadPackages = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/packages`);
-        if (!response.ok) {
-          throw new Error('No se pudieron cargar los paquetes desde el backend.');
-        }
-
-        const data = await response.json();
-        const normalized = Array.isArray(data)
-          ? data.map((item) => ({
-                packageId: item.packageId,
-                packageName: item.packageName,
-                packageVersion: item.packageVersion,
-                packageLicense: item.packageLicense,
-                shard_ubicacion: 'Scatter-Gather (VTGate)'
-              }))
-          : [];
-
-        setRows(normalized);
-      } catch (error) {
-        setStatusLines([`✗ Error cargando datos: ${error.message}`]);
+  const loadPackages = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/packages`);
+      if (!response.ok) {
+        throw new Error('No se pudieron cargar los paquetes desde el backend.');
       }
-    };
 
+      const data = await response.json();
+      const normalized = Array.isArray(data)
+        ? data.map((item) => ({
+              packageId: item.packageId,
+              packageName: item.packageName,
+              packageVersion: item.packageVersion,
+              packageLicense: item.packageLicense,
+              shard_ubicacion: 'Scatter-Gather (VTGate)'
+            }))
+        : [];
+
+      setRows(normalized);
+    } catch (error) {
+      setStatusLines([`✗ Error cargando datos: ${error.message}`]);
+    }
+  };
+
+  useEffect(() => {
     loadPackages();
   }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE}/packages/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) {
+        throw new Error('Error al eliminar el paquete.');
+      }
+      setRows((prev) => prev.filter((r) => r.packageId !== id));
+      setStatusLines([`✓ Paquete ${id} eliminado correctamente`]);
+    } catch (error) {
+      setStatusLines([`✗ Error al eliminar: ${error.message}`]);
+    }
+  };
+
+  const fetchShard = async (shardName) => {
+    try {
+      setStatusLines([`Consultando shard ${shardName}...`]);
+      const response = await fetch(`${API_BASE}/shard/${shardName}`);
+      const data = await response.json();
+      
+      if (data.isDown) {
+        setStatusLines([`✗ ALERTA: Shard ${shardName} no está disponible actualmente.`]);
+        setRows([]);
+      } else {
+        setStatusLines([`✓ Shard ${shardName} consultado. Registros: ${data.count}`]);
+        const normalized = data.data.map((item) => ({
+          packageId: item.packageId,
+          packageName: item.packageName,
+          packageVersion: item.packageVersion,
+          packageLicense: item.packageLicense,
+          shard_ubicacion: shardName
+        }));
+        setRows(normalized);
+      }
+    } catch (error) {
+      setStatusLines([`✗ Error al consultar shard: ${error.message}`]);
+    }
+  };
 
   const metrics = useMemo(() => {
     const count = rows.length;
@@ -268,6 +308,13 @@ function Horizontal() {
             GET /packages <span>→ VTGate hace un Scatter-Gather ejecutando la consulta en paralelo sobre todos los shards</span>
           </div>
 
+          <div className="shard-actions tech" style={{marginTop: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
+            <button type="button" onClick={() => fetchShard('-55')} style={{padding: '6px 12px', fontSize: '12px', border: '1px solid #00c6a5', background: 'transparent', color: '#00c6a5', borderRadius: '4px', cursor: 'pointer'}}>Ver '-55'</button>
+            <button type="button" onClick={() => fetchShard('55-aa')} style={{padding: '6px 12px', fontSize: '12px', border: '1px solid #aa55ff', background: 'transparent', color: '#aa55ff', borderRadius: '4px', cursor: 'pointer'}}>Ver '55-aa'</button>
+            <button type="button" onClick={() => fetchShard('aa-')} style={{padding: '6px 12px', fontSize: '12px', border: '1px solid #ff7700', background: 'transparent', color: '#ff7700', borderRadius: '4px', cursor: 'pointer'}}>Ver 'aa-'</button>
+            <button type="button" onClick={loadPackages} style={{padding: '6px 12px', fontSize: '12px', background: '#333', border: 'none', color: '#fff', borderRadius: '4px', cursor: 'pointer'}}>↻ Todos (Scatter-Gather)</button>
+          </div>
+
           <div className="section-title tech">MÉTRICAS EN VIVO</div>
           <div className="metrics">
             <div className="metric dark">
@@ -303,12 +350,13 @@ function Horizontal() {
                 <th className="core-head">versión</th>
                 <th className="core-head">licencia</th>
                 <th className="uuid-head" style={{paddingLeft: '16px'}}>ubicación física (shard)</th>
+                <th className="core-head" style={{textAlign: 'right', paddingRight: '16px'}}>acciones</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td className="empty tech" colSpan={5}>Sin registros aún — inserta el primero arriba</td>
+                  <td className="empty tech" colSpan={6}>No hay registros a mostrar.</td>
                 </tr>
               ) : (
                 rows.map((row) => (
@@ -323,6 +371,14 @@ function Horizontal() {
                       ) : (
                          <span style={{color: '#8a8a8a', fontStyle: 'italic', fontSize: '12px'}}>{row.shard_ubicacion}</span>
                       )}
+                    </td>
+                    <td style={{textAlign: 'right', paddingRight: '16px'}}>
+                      <button 
+                        onClick={() => handleDelete(row.packageId)}
+                        style={{background: 'transparent', color: '#ff4d4f', border: '1px solid #ff4d4f', padding: '2px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px'}}
+                      >
+                        Eliminar
+                      </button>
                     </td>
                   </tr>
                 ))

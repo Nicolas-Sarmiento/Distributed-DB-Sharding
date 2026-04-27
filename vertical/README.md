@@ -78,6 +78,7 @@ npm start
 3. Desde la **raíz del proyecto**, ejecutar frontend:
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 

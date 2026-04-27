@@ -171,7 +171,7 @@ function Vertical() {
         </div>
         <div className="status-group tech">
           <span className="dot" />
-          <span>VTGate · localhost:15306</span>
+          <span>VTGate · localhost:16306</span>
           <span className="badge-vt">2 keyspaces</span>
         </div>
       </header>

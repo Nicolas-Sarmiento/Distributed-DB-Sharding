@@ -9,7 +9,7 @@ app.use(express.json());
 
 const DB_CONFIG = {
     host: '127.0.0.1',
-    port: 15306,
+    port: 16306,
     user: 'root',
     database: ''
 };

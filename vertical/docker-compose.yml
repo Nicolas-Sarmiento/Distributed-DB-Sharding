@@ -38,8 +38,8 @@ services:
     volumes: 
       - ./:/vt/files
     ports:
-      - "15000:15000"
-      - "15999:15999"
+      - "16000:15000"
+      - "16999:15999"
     depends_on:
       - init_topo
   
@@ -58,7 +58,7 @@ services:
       --cells-to-watch zone1
       --tablet-types-to-wait primary
     ports:
-      - "15306:15306"
+      - "16306:15306"
     depends_on:
       - init_topo
 

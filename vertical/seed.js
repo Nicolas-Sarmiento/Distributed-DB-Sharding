@@ -7,7 +7,7 @@ async function sembrarDatos() {
     try {
         const connection = await mysql.createConnection({
             host: '127.0.0.1',
-            port: 15306,
+            port: 16306,
             user: 'root',
             database: ''
         });

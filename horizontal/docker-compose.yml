@@ -70,8 +70,13 @@ services:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=repo_software
     volumes:
-      - ./vt/shard_55:/var/lib/mysql
-
+      - mysql_shard_1_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
   vttablet_shard_1:
     image: vitess/lite:latest
     restart: on-failure
@@ -97,8 +102,10 @@ services:
       --grpc-port 15992
       --service-map 'grpc-queryservice,grpc-tabletmanager'
     depends_on:
-      - mysql_shard_1
-      - init_topo
+      mysql_shard_1:
+        condition: service_healthy
+      init_topo:
+        condition: service_completed_successfully
 
   # --- SHARD 2 ---
   mysql_shard_2:
@@ -108,7 +115,13 @@ services:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=repo_software
     volumes:
-      - ./vt/shard_55_aa:/var/lib/mysql
+      - mysql_shard_2_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
 
   vttablet_shard_2:
     image: vitess/lite:latest
@@ -135,8 +148,10 @@ services:
       --grpc-port 15993
       --service-map 'grpc-queryservice,grpc-tabletmanager'
     depends_on:
-      - mysql_shard_2
-      - init_topo
+      mysql_shard_2:
+        condition: service_healthy
+      init_topo:
+       condition: service_completed_successfully
     
   # --- SHARD 3 ---
   mysql_shard_3:
@@ -146,8 +161,13 @@ services:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=repo_software
     volumes:
-      - ./vt/shard_aa:/var/lib/mysql
-
+      - mysql_shard_3_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s 
   vttablet_shard_3:
     image: vitess/lite:latest
     restart: on-failure
@@ -173,5 +193,11 @@ services:
       --grpc-port 15994
       --service-map 'grpc-queryservice,grpc-tabletmanager'
     depends_on:
-      - mysql_shard_3
-      - init_topo
+      mysql_shard_3:
+        condition: service_healthy
+      init_topo:
+        condition: service_completed_successfully
+volumes:
+  mysql_shard_1_data:
+  mysql_shard_2_data:
+  mysql_shard_3_data:

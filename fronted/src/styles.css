@@ -13,6 +13,15 @@
   --uuid-bg: #d3d1c7;
   --uuid-text: #2c2c2a;
   --line: #e5e5e5;
+  --shard1-bg: #ffe4e6;
+  --shard1-border: #f43f5e;
+  --shard1-text: #881337;
+  --shard2-bg: #e0f2fe;
+  --shard2-border: #0ea5e9;
+  --shard2-text: #082f49;
+  --shard3-bg: #dcfce7;
+  --shard3-border: #22c55e;
+  --shard3-text: #052e16;
 }
 
 * {
@@ -475,3 +484,44 @@ th {
     align-items: flex-start;
   }
 }
+
+.view-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--topbar);
+  border-bottom: 0.5px solid #2e2e2e;
+}
+
+.view-switcher button {
+  width: auto;
+  margin: 0;
+  padding: 8px 16px;
+  background: #2f2f2f;
+  color: #a8a8a8;
+  border: 1px solid #444;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.view-switcher button.active {
+  background: #f4b66d;
+  color: #1a1a1a;
+  border-color: #f4b66d;
+  font-weight: bold;
+}
+
+.shard1-box { background: var(--shard1-bg); color: var(--shard1-text); border-color: var(--shard1-border); }
+.shard2-box { background: var(--shard2-bg); color: var(--shard2-text); border-color: var(--shard2-border); }
+.shard3-box { background: var(--shard3-bg); color: var(--shard3-text); border-color: var(--shard3-border); }
+
+.chip.shard1, .legend-chip.shard1 { background: var(--shard1-bg); color: var(--shard1-text); border-color: var(--shard1-border); }
+.chip.shard2, .legend-chip.shard2 { background: var(--shard2-bg); color: var(--shard2-text); border-color: var(--shard2-border); }
+.chip.shard3, .legend-chip.shard3 { background: var(--shard3-bg); color: var(--shard3-text); border-color: var(--shard3-border); }
+
+.shard1-head { background: var(--shard1-bg); color: var(--shard1-text); }
+.shard2-head { background: var(--shard2-bg); color: var(--shard2-text); }
+.shard3-head { background: var(--shard3-bg); color: var(--shard3-text); }

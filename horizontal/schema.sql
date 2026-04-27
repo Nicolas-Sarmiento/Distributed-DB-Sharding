@@ -4,4 +4,4 @@ CREATE TABLE IF NOT EXISTS software_packages (
     packageVersion VARCHAR(20),
     packageLicense VARCHAR(50),
     PRIMARY KEY (packageId)
-) ENGINE=InnoDB;
+);

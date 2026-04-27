@@ -8,3 +8,7 @@
 - Nicolas Sarmiento Vargas.
 
 En este repositorio se encuentran dos ejemplos de sharding o fragmentación. Uno es acerca de la fragmentación horizontal y el otro es acerca de la fragmentación vertical. En cada carpeta encontrará un archivo `README.md` en el cual están detallados los pasos de ejecución de cada ejemplo.
+Para ello se adjuntan los links de cada uno:
+
+- [Sharding Horizontal](horizontal/README.md)
+- [Sharding Vertical](vertical/README.md)
